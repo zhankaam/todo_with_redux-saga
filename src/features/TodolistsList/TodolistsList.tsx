@@ -10,7 +10,7 @@ import {
     removeTodolistTC,
     TodolistDomainType
 } from './todolists-reducer'
-import {addTaskTC, removeTasks, TasksStateType, updateTaskTC} from './tasks-reducer'
+import {addTasks, removeTasks, TasksStateType, updateTask} from './tasks-reducer'
 import {TaskStatuses} from '../../api/todolists-api'
 import {Grid, Paper} from '@material-ui/core'
 import {AddItemForm} from '../../components/AddItemForm/AddItemForm'
@@ -37,22 +37,20 @@ export const TodolistsList: React.FC<PropsType> = ({demo = false}) => {
     }, [])
 
     const removeTask = useCallback(function ( todolistId: string,id: string) {
-        const thunk = removeTasks(todolistId,id)
-        dispatch(thunk)
+        dispatch(removeTasks(todolistId,id))
     }, [])
 
     const addTask = useCallback(function (title: string, todolistId: string) {
-        const thunk = addTaskTC(title, todolistId)
-        dispatch(thunk)
+        dispatch( addTasks(title, todolistId))
     }, [])
 
     const changeStatus = useCallback(function (id: string, status: TaskStatuses, todolistId: string) {
-        const thunk = updateTaskTC(id, {status}, todolistId)
+        const thunk = updateTask(id, {status}, todolistId)
         dispatch(thunk)
     }, [])
 
     const changeTaskTitle = useCallback(function (id: string, newTitle: string, todolistId: string) {
-        const thunk = updateTaskTC(id, {title: newTitle}, todolistId)
+        const thunk = updateTask(id, {title: newTitle}, todolistId)
         dispatch(thunk)
     }, [])
 

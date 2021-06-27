@@ -1,6 +1,6 @@
 import {authAPI} from '../api/todolists-api'
 import {setIsLoggedInAC} from '../features/Login/auth-reducer'
-import {call, put} from 'redux-saga/effects'
+import {call, put, takeEvery} from 'redux-saga/effects'
 
 const initialState = {
     status: 'idle' as RequestStatusType,
@@ -59,3 +59,8 @@ type ActionsType =
     | SetAppErrorActionType
     | SetAppStatusActionType
     | ReturnType<typeof setAppInitializedAC>
+
+export function* appWatcherSaga(){
+    yield takeEvery('APP/INITIALIZE-APP', initializeAppWorkerSaga)
+}
+
