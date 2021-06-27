@@ -1,9 +1,18 @@
 import {AddTodolistActionType, RemoveTodolistActionType, SetTodolistsActionType} from './todolists-reducer'
-import {TaskPriorities, TaskStatuses, TaskType, todolistsAPI, UpdateTaskModelType} from '../../api/todolists-api'
+import {
+    GetTasksResponse,
+    TaskPriorities,
+    TaskStatuses,
+    TaskType,
+    todolistsAPI,
+    UpdateTaskModelType
+} from '../../api/todolists-api'
 import {Dispatch} from 'redux'
 import {AppRootStateType} from '../../app/store'
-import {setAppErrorAC, SetAppErrorActionType, setAppStatusAC, SetAppStatusActionType} from '../../app/app-reducer'
+import {SetAppErrorActionType, setAppStatusAC, SetAppStatusActionType} from '../../app/app-reducer'
 import {handleServerAppError, handleServerNetworkError} from '../../utils/error-utils'
+import {put, call} from 'redux-saga/effects'
+import {AxiosResponse} from "axios";
 
 const initialState: TasksStateType = {}
 
@@ -40,8 +49,8 @@ export const tasksReducer = (state: TasksStateType = initialState, action: Actio
 }
 
 // actions
-export const removeTaskAC = (taskId: string, todolistId: string) =>
-    ({type: 'REMOVE-TASK', taskId, todolistId} as const)
+export const removeTaskAC = ( todolistId: string,taskId: string) =>
+    ({type: 'REMOVE-TASK', todolistId,taskId} as const)
 export const addTaskAC = (task: TaskType) =>
     ({type: 'ADD-TASK', task} as const)
 export const updateTaskAC = (taskId: string, model: UpdateDomainTaskModelType, todolistId: string) =>
@@ -49,23 +58,45 @@ export const updateTaskAC = (taskId: string, model: UpdateDomainTaskModelType, t
 export const setTasksAC = (tasks: Array<TaskType>, todolistId: string) =>
     ({type: 'SET-TASKS', tasks, todolistId} as const)
 
+// sagas
+export function* fetchTasksWorkerSaga(action: ReturnType<typeof fetchTasks>) {
+    yield put(setAppStatusAC('loading'))
+    const res: AxiosResponse<GetTasksResponse> = yield call(todolistsAPI.getTasks, action.todolistId)
+    const tasks = res.data.items
+    yield put(setTasksAC(tasks, action.todolistId))
+    yield put(setAppStatusAC('succeeded'))
+}
+
+export const fetchTasks = (todolistId: string) => ({type: 'TASKS/FETCH-TASKS', todolistId})
+
+export function* removeTaskWorkerSaga(action: ReturnType<typeof removeTasks>) {
+    yield call(todolistsAPI.deleteTask, action.todolistId, action.taskId)
+    yield put(removeTaskAC(action.todolistId,action.taskId))
+}
+
+export const removeTasks = (todolistId: string,taskId: string) => ({type: 'TASKS/REMOVE-TASKS', todolistId,taskId})
+
+
 // thunks
-export const fetchTasksTC = (todolistId: string) => (dispatch: Dispatch<ActionsType | SetAppStatusActionType>) => {
-    dispatch(setAppStatusAC('loading'))
-    todolistsAPI.getTasks(todolistId)
-        .then((res) => {
-            const tasks = res.data.items
-            dispatch(setTasksAC(tasks, todolistId))
-            dispatch(setAppStatusAC('succeeded'))
-        })
-}
-export const removeTaskTC = (taskId: string, todolistId: string) => (dispatch: Dispatch<ActionsType>) => {
-    todolistsAPI.deleteTask(todolistId, taskId)
-        .then(res => {
-            const action = removeTaskAC(taskId, todolistId)
-            dispatch(action)
-        })
-}
+
+// export const fetchTasksTC_ = (todolistId: string) => (dispatch: Dispatch<ActionsType | SetAppStatusActionType>) => {
+//     dispatch(setAppStatusAC('loading'))
+//     todolistsAPI.getTasks(todolistId)
+//         .then((res) => {
+//             const tasks = res.data.items
+//             dispatch(setTasksAC(tasks, todolistId))
+//             dispatch(setAppStatusAC('succeeded'))
+//         })
+// }
+
+// export const removeTaskTC_ = (taskId: string, todolistId: string) => (dispatch: Dispatch<ActionsType>) => {
+//     todolistsAPI.deleteTask(todolistId, taskId)
+//         .then(res => {
+//             const action = removeTaskAC(taskId, todolistId)
+//             dispatch(action)
+//         })
+// }
+
 export const addTaskTC = (title: string, todolistId: string) => (dispatch: Dispatch<ActionsType | SetAppErrorActionType | SetAppStatusActionType>) => {
     dispatch(setAppStatusAC('loading'))
     todolistsAPI.createTask(todolistId, title)
