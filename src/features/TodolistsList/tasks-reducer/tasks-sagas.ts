@@ -17,7 +17,7 @@ export function* fetchTasksWorkerSaga(action: ReturnType<typeof fetchTasks>) {
     const data: GetTasksResponse = yield call(todolistsAPI.getTasks, action.todolistId)
     const tasks = data.items
     yield put(setTasksAC(tasks, action.todolistId))
-    return put(setAppStatusAC('succeeded'))
+    yield put(setAppStatusAC('succeeded'))
 }
 
 export const fetchTasks = (todolistId: string) => ({type: 'TASKS/FETCH-TASKS', todolistId})
@@ -70,21 +70,21 @@ export function* updateTaskWorkerSaga(action: ReturnType<typeof updateTask>) {
     try {
         const res = yield call(todolistsAPI.updateTask, action.todolistId, action.taskId, apiModel)
         if (res.data.resultCode === 0) {
-            yield put(updateTaskAC(action.taskId, action.domainModel, action.todolistId))
+            yield put(updateTaskAC(action.todolistId,action.taskId, action.domainModel))
         } else {
-            yield handleServerAppErrorSaga(res.data);
+            yield* handleServerAppErrorSaga(res.data);
         }
     } catch (err) {
-        yield handleServerNetworkErrorSaga(err);
+        yield* handleServerNetworkErrorSaga(err);
     }
 
 }
 
-export const updateTask = (taskId: string, domainModel: UpdateDomainTaskModelType, todolistId: string) => ({
+export const updateTask = (todolistId: string,taskId: string, domainModel: UpdateDomainTaskModelType) => ({
     type: 'TASKS/UPDATE-TASKS',
+    todolistId,
     taskId,
-    domainModel,
-    todolistId
+    domainModel
 })
 
 
@@ -92,4 +92,5 @@ export function* tasksWatcherSaga() {
     yield takeEvery('TASKS/FETCH-TASKS', fetchTasksWorkerSaga)
     yield takeEvery('TASKS/REMOVE-TASKS', removeTaskWorkerSaga)
     yield takeEvery('TASKS/ADD-TASKS', addTaskWorkerSaga)
+    yield takeEvery('TASKS/UPDATE-TASKS', updateTaskWorkerSaga)
 }
