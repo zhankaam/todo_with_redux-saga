@@ -28,17 +28,6 @@ export const setAppErrorAC = (error: string | null) => ({type: 'APP/SET-ERROR', 
 export const setAppStatusAC = (status: RequestStatusType) => ({type: 'APP/SET-STATUS', status} as const)
 export const setAppInitializedAC = (value: boolean) => ({type: 'APP/SET-IS-INITIALIZED', value} as const)
 
-export function* initializeAppWorkerSaga() {
-    const res = yield call(authAPI.me)
-    if (res.data.resultCode === 0) {
-        yield put(setIsLoggedInAC(true));
-    } else {
-
-    }
-    yield put(setAppInitializedAC(true));
-}
-
-export const initializeApp = () => ({type: 'APP/INITIALIZE-APP'})
 
 // export const initializeAppTC = () => async(dispatch: Dispatch) => {
 //     const res = await authAPI.me()
@@ -60,7 +49,4 @@ type ActionsType =
     | SetAppStatusActionType
     | ReturnType<typeof setAppInitializedAC>
 
-export function* appWatcherSaga(){
-    yield takeEvery('APP/INITIALIZE-APP', initializeAppWorkerSaga)
-}
 
