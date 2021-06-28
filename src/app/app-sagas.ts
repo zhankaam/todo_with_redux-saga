@@ -5,6 +5,7 @@ import {setAppInitializedAC} from "./app-reducer";
 
 export function* initializeAppWorkerSaga() {
     const data: MeResponseType = yield call(authAPI.me)
+
     if (data.resultCode === 0) {
         yield put(setIsLoggedInAC(true));
     } else {

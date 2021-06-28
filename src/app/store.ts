@@ -1,14 +1,15 @@
-import {tasksReducer} from '../features/TodolistsList/tasks-reducer/tasks-reducer'
-import {todolistsReducer} from '../features/TodolistsList/todolists-reducer/todolists-reducer'
-import {applyMiddleware, combineReducers, createStore} from 'redux'
-import thunkMiddleware from 'redux-thunk'
-import {appReducer} from './app-reducer'
-import {authReducer} from '../features/Login/auth-reducer'
-import createSagaMiddleware from 'redux-saga'
-import {appWatcherSaga} from "./app-sagas";
-import {tasksWatcherSaga} from "../features/TodolistsList/tasks-reducer/tasks-sagas";
-import {todolistsWatcherSaga} from "../features/TodolistsList/todolists-reducer/todolists-sagas";
-import {authWatcherSaga} from "../features/Login/auth-sagas";
+import {tasksReducer} from "../features/TodolistsList/tasks-reducer/tasks-reducer"
+import {todolistsReducer} from "../features/TodolistsList/todolists-reducer/todolists-reducer"
+import {applyMiddleware, combineReducers, createStore} from "redux"
+import thunkMiddleware from "redux-thunk"
+import {appReducer} from "./app-reducer"
+import {authReducer} from "../features/Login/auth-reducer"
+import createSagaMiddleware from "redux-saga"
+import {appWatcherSaga} from "./app-sagas"
+import {tasksWatcherSaga} from "../features/TodolistsList/tasks-reducer/tasks-sagas"
+import {todolistsWatcherSaga} from "../features/TodolistsList/todolists-reducer/todolists-sagas"
+import {authWatcherSaga} from "../features/Login/auth-sagas"
+import {all} from "redux-saga/effects"
 
 // объединяя reducer-ы с помощью combineReducers,
 // мы задаём структуру нашего единственного объекта-состояния
@@ -30,10 +31,11 @@ export type AppRootStateType = ReturnType<typeof rootReducer>
 sagaMiddleware.run(rootWatcher)
 
 function* rootWatcher() {
-    yield appWatcherSaga()
-    yield tasksWatcherSaga()
-    yield todolistsWatcherSaga()
-    yield authWatcherSaga()
+    yield all([appWatcherSaga(), authWatcherSaga(), todolistsWatcherSaga(), tasksWatcherSaga()])
+    // yield* appWatcherSaga()
+    // yield* authWatcherSaga()
+    // yield* todolistsWatcherSaga()
+    // yield* tasksWatcherSaga()
 }
 
 // function* rootWorker() {

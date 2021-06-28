@@ -12,7 +12,7 @@ import {Grid, Paper} from '@material-ui/core'
 import {AddItemForm} from '../../components/AddItemForm/AddItemForm'
 import {Todolist} from './Todolist/Todolist'
 import {Redirect} from 'react-router-dom'
-import {fetchTodolists} from "./todolists-reducer/todolists-sagas";
+import {changeTodolistTitles, fetchTodolists, removeTodolists, addTodolists} from "./todolists-reducer/todolists-sagas";
 import {addTasks, removeTasks, updateTask} from './tasks-reducer/tasks-sagas'
 
 type PropsType = {
@@ -30,8 +30,8 @@ export const TodolistsList: React.FC<PropsType> = ({demo = false}) => {
         if (demo || !isLoggedIn) {
             return;
         }
-        const thunk = fetchTodolists()
-        dispatch(thunk)
+
+        dispatch(fetchTodolists())
     }, [])
 
     const removeTask = useCallback(function ( todolistId: string,id: string) {
@@ -55,15 +55,15 @@ export const TodolistsList: React.FC<PropsType> = ({demo = false}) => {
     }, [])
 
     const removeTodolist = useCallback(function (id: string) {
-        dispatch(removeTodolist(id))
+        dispatch(removeTodolists(id))
     }, [])
 
     const changeTodolistTitle = useCallback(function (id: string, title: string) {
-        dispatch(changeTodolistTitle(id, title))
+        dispatch(changeTodolistTitles(id, title))
     }, [])
 
     const addTodolist = useCallback((title: string) => {
-        dispatch(addTodolist(title))
+        dispatch(addTodolists(title))
     }, [dispatch])
 
     if (!isLoggedIn) {

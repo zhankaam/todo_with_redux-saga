@@ -7,7 +7,6 @@ import {
     updateTaskAC
 } from "./tasks-reducer";
 import {setAppStatusAC} from "../../../app/app-reducer";
-import {AxiosResponse} from "axios";
 import {GetTasksResponse, todolistsAPI, UpdateTaskModelType} from "../../../api/todolists-api";
 import {handleServerAppErrorSaga, handleServerNetworkErrorSaga} from "../../../utils/error-utils";
 import {AppRootStateType} from "../../../app/store";
@@ -18,12 +17,12 @@ export function* fetchTasksWorkerSaga(action: ReturnType<typeof fetchTasks>) {
     const data: GetTasksResponse = yield call(todolistsAPI.getTasks, action.todolistId)
     const tasks = data.items
     yield put(setTasksAC(tasks, action.todolistId))
-    yield put(setAppStatusAC('succeeded'))
+    return put(setAppStatusAC('succeeded'))
 }
 
 export const fetchTasks = (todolistId: string) => ({type: 'TASKS/FETCH-TASKS', todolistId})
 
-function* removeTaskWorkerSaga(action: ReturnType<typeof removeTasks>) {
+export function* removeTaskWorkerSaga(action: ReturnType<typeof removeTasks>) {
     yield call(todolistsAPI.deleteTask, action.todolistId, action.taskId)
     yield put(removeTaskAC(action.todolistId, action.taskId))
 }
@@ -32,16 +31,16 @@ export const removeTasks = (todolistId: string, taskId: string) => ({type: 'TASK
 
 export function* addTaskWorkerSaga(action: ReturnType<typeof addTasks>) {
     yield put(setAppStatusAC('loading'))
-    const res = yield call(todolistsAPI.createTask, action.todolistId, action.title)
     try {
+        const res = yield call(todolistsAPI.createTask, action.todolistId, action.title)
         if (res.data.resultCode === 0) {
             yield put(addTaskAC(res.data.data.item))
             yield put(setAppStatusAC('succeeded'))
         } else {
-            handleServerAppErrorSaga(res.data);
+            yield* handleServerAppErrorSaga(res.data);
         }
     } catch (err) {
-        handleServerNetworkErrorSaga(err)
+        yield* handleServerNetworkErrorSaga(err)
     }
 }
 
@@ -68,15 +67,15 @@ export function* updateTaskWorkerSaga(action: ReturnType<typeof updateTask>) {
         ...action.domainModel
     }
 
-    const res = yield call(todolistsAPI.updateTask, action.todolistId, action.taskId, apiModel)
     try {
+        const res = yield call(todolistsAPI.updateTask, action.todolistId, action.taskId, apiModel)
         if (res.data.resultCode === 0) {
             yield put(updateTaskAC(action.taskId, action.domainModel, action.todolistId))
         } else {
-            handleServerAppErrorSaga(res.data);
+            yield handleServerAppErrorSaga(res.data);
         }
     } catch (err) {
-        handleServerNetworkErrorSaga(err);
+        yield handleServerNetworkErrorSaga(err);
     }
 
 }

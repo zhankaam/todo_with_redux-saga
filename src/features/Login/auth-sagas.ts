@@ -7,16 +7,16 @@ import {setIsLoggedInAC} from "./auth-reducer";
 // sagas
 export function* loginWorkerSaga(action: ReturnType<typeof login>) {
     yield put(setAppStatusAC('loading'))
-    const res = yield call(authAPI.login,action.data)
     try {
+        const res = yield call(authAPI.login,action.data)
         if (res.data.resultCode === 0) {
             yield put(setIsLoggedInAC(true))
             yield put(setAppStatusAC('succeeded'))
         } else {
-            handleServerAppErrorSaga(res.data)
+            yield handleServerAppErrorSaga(res.data)
         }
     } catch (err) {
-        handleServerNetworkErrorSaga(err)
+        yield handleServerNetworkErrorSaga(err)
     }
 }
 
@@ -24,16 +24,16 @@ export const login = (data: LoginParamsType) => ({type: 'AUTH/LOGIN',data})
 
 export function* logoutWorkerSaga() {
     yield put(setAppStatusAC('loading'))
-    const res = yield call(authAPI.logout)
     try {
+        const res = yield call(authAPI.logout)
         if (res.data.resultCode === 0) {
             yield put(setIsLoggedInAC(false))
             yield put(setAppStatusAC('succeeded'))
         } else {
-            handleServerAppErrorSaga(res.data)
+            yield handleServerAppErrorSaga(res.data)
         }
     } catch (err) {
-        handleServerNetworkErrorSaga(err)
+        yield handleServerNetworkErrorSaga(err)
     }
 }
 
